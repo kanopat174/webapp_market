@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Vitara อาหารเสริม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky header with search + cart, compact intro band, shelf-style product grid; detail view swaps the main area; cart drawer right; AI pharmacist chat docks bottom-right */
+:root{
+  --bg:#f5f7f4; --surface:#ffffff; --sunk:#e9eee8; --line:#d5ddd4;
+  --ink:#16302a; --muted:#5b6f68; --brand:#1f6b57; --brand-ink:#ffffff;
+  --accent:#e2a03a; --accent-soft:#fbefd9; --ok:#2f8a4c; --danger:#c2412d;
+  --shadow:0 10px 30px rgba(22,48,42,.12);
+  --f-display:"Mitr","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1715; --surface:#16211e; --sunk:#1d2a26; --line:#2b3b36;
+  --ink:#e4efe9; --muted:#9cb2aa; --brand:#4fb895; --brand-ink:#0b1714;
+  --accent:#f0b65a; --accent-soft:#3a2f1c; --ok:#5cc27c; --danger:#ef7a64;
+  --shadow:0 10px 30px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1715; --surface:#16211e; --sunk:#1d2a26; --line:#2b3b36;
+  --ink:#e4efe9; --muted:#9cb2aa; --brand:#4fb895; --brand-ink:#0b1714;
+  --accent:#f0b65a; --accent-soft:#3a2f1c; --ok:#5cc27c; --danger:#ef7a64;
+  --shadow:0 10px 30px rgba(0,0,0,.45); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:500;line-height:1.25;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px}
+.num{font-variant-numeric:tabular-nums}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;gap:16px;padding-block:12px}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:22px;font-weight:600;color:var(--brand);background:none;border:0;padding:0;white-space:nowrap}
+.logo small{font-family:var(--f-body);font-size:12px;color:var(--muted);font-weight:400}
+.search{flex:1;min-width:0;position:relative}
+.search input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.cartbtn{position:relative;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;background:var(--brand);color:var(--brand-ink);border:0;font-weight:500;white-space:nowrap}
+.cartbtn .badge{background:var(--accent);color:#1d1606;border-radius:999px;font-size:12px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 6px;font-family:var(--f-mono)}
+@media (max-width:620px){.logo small{display:none}.hbar{gap:10px}.cartbtn .lbl{display:none}}
+
+/* intro */
+.intro{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center;padding-block:28px 8px}
+.intro h1{font-size:clamp(26px,4vw,38px);color:var(--ink)}
+.intro h1 em{font-style:normal;color:var(--brand)}
+.intro p{color:var(--muted);max-width:56ch;margin:10px 0 16px}
+.intro .cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:500}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn.accent{background:var(--accent);color:#1d1606;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.fact b{display:block;font-family:var(--f-display);font-size:20px;font-weight:500;color:var(--brand)}
+.fact span{font-size:12.5px;color:var(--muted)}
+@media (max-width:820px){.intro{grid-template-columns:1fr}}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-block:18px 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13.5px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.selects{display:flex;gap:8px;flex-wrap:wrap}
+.selects select{padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.resultline{font-size:13.5px;color:var(--muted);padding-bottom:10px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding-bottom:48px}
+.card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.card .shot{aspect-ratio:4/3;max-width:100%;display:grid;place-items:center;border:0;padding:0;width:100%;position:relative}
+.card .shot svg{height:82%;width:auto}
+.tag{position:absolute;top:10px;left:10px;font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.tag.sale{left:auto;right:10px;background:var(--accent);color:#1d1606;border-color:var(--accent);font-family:var(--f-mono)}
+.card .body{display:flex;flex-direction:column;gap:4px;padding:12px 14px 14px;flex:1}
+.brandname{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.card h3{font-size:16px;font-weight:500}
+.card h3 button{background:none;border:0;padding:0;text-align:left}
+.card h3 button:hover{color:var(--brand)}
+.meta{font-size:12.5px;color:var(--muted)}
+.stars{color:var(--accent);letter-spacing:1px;font-size:13px}
+.pricerow{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px}
+.price{font-family:var(--f-display);font-size:19px;color:var(--ink)}
+.price s{font-family:var(--f-body);font-size:12.5px;color:var(--muted);margin-left:6px}
+.add{border:0;background:var(--brand);color:var(--brand-ink);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;flex:none}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* detail */
+.back{background:none;border:0;padding:16px 0 8px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.detail{display:grid;grid-template-columns:1fr 1.15fr;gap:32px;padding-bottom:24px}
+.detail .gallery{border-radius:var(--r);aspect-ratio:1;max-width:100%;display:grid;place-items:center;border:1px solid var(--line)}
+.detail .gallery svg{height:78%;width:auto}
+.detail h1{font-size:clamp(24px,3.4vw,32px)}
+.detail .lead{color:var(--muted);margin:8px 0 14px}
+.specs{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;margin:14px 0;padding:14px;background:var(--sunk);border-radius:var(--r)}
+.specs dt{color:var(--muted)} .specs dd{margin:0}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.qty button{width:34px;height:34px;border:0;background:none;font-size:18px}
+.qty span{min-width:28px;text-align:center;font-family:var(--f-mono)}
+.buyrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pill{font-size:12.5px;padding:2px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:8px;overflow-x:auto}
+.tabs button{background:none;border:0;padding:10px 14px;border-bottom:2px solid transparent;color:var(--muted);white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--brand);font-weight:500}
+.tabpanel{padding:18px 0 8px;max-width:72ch}
+.tabpanel ul{padding-left:20px;margin:0}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-block:28px 12px;border-top:1px solid var(--line);margin-top:20px}
+.section-h h2{font-size:22px}
+.reviewwrap{display:grid;grid-template-columns:240px 1fr;gap:24px}
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;align-self:start}
+.summary .big{font-family:var(--f-display);font-size:40px;line-height:1}
+.bar{display:grid;grid-template-columns:22px 1fr 28px;gap:8px;align-items:center;font-size:12.5px;color:var(--muted)}
+.bar i{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;display:block}
+.bar i b{display:block;height:100%;background:var(--accent)}
+.reviews{display:flex;flex-direction:column;gap:12px;min-width:0}
+.review{border-bottom:1px solid var(--line);padding-bottom:12px}
+.review header{position:static;background:none;backdrop-filter:none;border:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px}
+.review header b{font-weight:600}
+.review p{margin:4px 0 0}
+.verified{font-size:11.5px;color:var(--ok)}
+.rform{display:grid;gap:8px;margin-top:8px;padding:14px;border:1px dashed var(--line);border-radius:var(--r)}
+.rform .row{display:flex;gap:8px;flex-wrap:wrap}
+.rform input,.rform textarea,.rform select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);min-width:0;flex:1}
+.starpick{display:flex;gap:2px}
+.starpick button{background:none;border:0;font-size:22px;color:var(--line);padding:0 2px}
+.starpick button.on{color:var(--accent)}
+@media (max-width:820px){.detail,.reviewwrap{grid-template-columns:1fr}}
+
+/* drawer + modal */
+.scrim{position:fixed;inset:0;background:rgba(10,20,17,.45);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);z-index:41;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--line)}
+.dhead h2{font-size:20px}
+.x{background:none;border:0;width:36px;height:36px;border-radius:50%;font-size:20px;color:var(--muted)}
+.dbody{flex:1;overflow:auto;padding:8px 16px}
+.line{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.line .thumb{width:56px;height:56px;border-radius:10px;display:grid;place-items:center}
+.line .thumb svg{height:46px;width:auto}
+.line .nm{font-size:14px;font-weight:500;line-height:1.35}
+.line .rm{background:none;border:0;color:var(--muted);font-size:12.5px;padding:0;text-decoration:underline}
+.dfoot{padding:16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.tot{display:flex;justify-content:space-between;font-size:14px}
+.tot.grand{font-family:var(--f-display);font-size:19px}
+.hint{font-size:12.5px;color:var(--muted)}
+.prog{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.prog b{display:block;height:100%;background:var(--ok)}
+.modal{position:fixed;inset:0;z-index:42;display:grid;place-items:center;padding:16px}
+.mbox{background:var(--surface);border-radius:16px;width:min(720px,100%);max-height:calc(100% - 32px);overflow:auto;box-shadow:var(--shadow)}
+.steps{display:flex;gap:6px;padding:0 16px 12px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.steps span{padding:3px 10px;border-radius:999px;background:var(--sunk)}
+.steps span.on{background:var(--brand);color:var(--brand-ink)}
+.co{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;padding:4px 16px 16px}
+.co form{display:grid;gap:10px;min-width:0}
+.fld{display:grid;gap:4px;font-size:13.5px;min-width:0}
+.fld input,.fld textarea,.fld select{padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);width:100%}
+.fld input[aria-invalid="true"]{border-color:var(--danger)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.payopts{display:grid;gap:8px}
+.payopt{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.payopt:has(input:checked){border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.demo{font-size:12.5px;background:var(--accent-soft);padding:8px 10px;border-radius:8px}
+.err{color:var(--danger);font-size:12.5px}
+.osum{background:var(--sunk);border-radius:var(--r);padding:14px;display:grid;gap:6px;align-self:start;font-size:14px}
+.osum .it{display:flex;justify-content:space-between;gap:8px}
+.coupon{display:flex;gap:6px}
+.coupon input{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.done{padding:28px 20px;text-align:center;display:grid;gap:10px;justify-items:center}
+.done .ok{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:32px}
+#qr{image-rendering:pixelated;border:8px solid #fff;border-radius:8px;background:#fff}
+@media (max-width:680px){.co{grid-template-columns:1fr}}
+
+/* chat */
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;border:0;background:var(--ink);color:var(--bg);box-shadow:var(--shadow);font-weight:500}
+.fab .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+.chat{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:36;width:min(400px,calc(100% - 32px));height:min(640px,calc(100% - 100px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.chead{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--brand);color:var(--brand-ink)}
+.chead .av{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#1d1606;display:grid;place-items:center;font-family:var(--f-display)}
+.chead div{flex:1;line-height:1.3}
+.chead small{display:block;opacity:.8;font-size:12px}
+.chead .x{color:var(--brand-ink)}
+.cfilters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--sunk)}
+.cfilters label{font-size:11.5px;color:var(--muted);display:grid;gap:2px}
+.cfilters select{padding:5px 6px;border-radius:6px;border:1px solid var(--line);background:var(--surface);font-size:13px;width:100%}
+.msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.bot{background:var(--sunk);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.me{background:var(--brand);color:var(--brand-ink);border-bottom-right-radius:4px;align-self:flex-end}
+.msg.think{color:var(--muted);font-style:italic}
+.recs{display:grid;gap:6px;align-self:stretch}
+.rec{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.rec .thumb{width:44px;height:44px;border-radius:8px;display:grid;place-items:center}
+.rec .thumb svg{height:36px;width:auto}
+.rec b{font-size:13.5px;font-weight:500;display:block;line-height:1.3}
+.rec span{font-size:12px;color:var(--muted)}
+.rec .acts{display:flex;gap:4px}
+.rec .acts button{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 8px;font-size:12px}
+.quick{display:flex;gap:6px;overflow-x:auto;padding:0 12px 8px}
+.quick button{flex:none;font-size:12.5px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.cin{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+.cin input{flex:1;min-width:0;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.cin button{border:0;border-radius:999px;background:var(--brand);color:var(--brand-ink);padding:0 16px}
+.mode{font-size:11px;color:var(--muted);padding:0 12px 6px}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;z-index:60;font-size:14px;box-shadow:var(--shadow)}
+footer{border-top:1px solid var(--line);padding-block:20px 90px;color:var(--muted);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header>
+  <div class="wrap hbar">
+    <button class="logo" id="home" aria-label="หน้าแรก">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="3" y="7" width="20" height="12" rx="6" fill="var(--brand)"/><rect x="13" y="7" width="10" height="12" rx="0" fill="var(--accent)"/><rect x="13" y="7" width="10" height="12" rx="6" fill="var(--accent)"/><rect x="11" y="7" width="4" height="12" fill="var(--accent)"/></svg>
+      Vitara <small>ร้านอาหารเสริมออนไลน์</small>
+    </button>
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="ค้นหา เช่น ผิวขาว, คอลลาเจน, นอนหลับ…" aria-label="ค้นหาสินค้า">
+    </label>
+    <button class="cartbtn" id="openCart" aria-label="ตะกร้าสินค้า">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+      <span class="lbl">ตะกร้า</span><span class="badge" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<footer><div class="wrap">Vitara เป็นร้านสาธิต (demo) สินค้า แบรนด์ และรีวิวทั้งหมดเป็นข้อมูลตัวอย่าง · ไม่มีการชำระเงินจริง · ผลิตภัณฑ์เสริมอาหารไม่มีผลในการป้องกันหรือรักษาโรค ควรปรึกษาแพทย์หรือเภสัชกรก่อนใช้ โดยเฉพาะผู้ตั้งครรภ์ ให้นมบุตร หรือมีโรคประจำตัว</div></footer>
+
+<button class="fab" id="fab"><span class="dot"></span>ผู้ช่วย AI แนะนำสินค้า</button>
+
+<section class="chat" id="chat" hidden aria-label="ผู้ช่วยแนะนำสินค้า">
+  <div class="chead">
+    <span class="av">V</span>
+    <div><b>น้องวี ผู้ช่วยเลือกอาหารเสริม</b><small id="chatMode">บอกเป้าหมาย แล้วเลือกตัวกรองด้านล่าง</small></div>
+    <button class="x" id="closeChat" aria-label="ปิดแชท">✕</button>
+  </div>
+  <div class="cfilters">
+    <label>อายุ<select id="fAge"><option value="">ไม่ระบุ</option><option value="10">ต่ำกว่า 13 ปี</option><option value="16">13–19 ปี</option><option value="27">20–34 ปี</option><option value="42">35–49 ปี</option><option value="57">50–64 ปี</option><option value="70">65 ปีขึ้นไป</option></select></label>
+    <label>เพศ<select id="fGender"><option value="">ไม่ระบุ</option><option value="female">หญิง</option><option value="male">ชาย</option></select></label>
+    <label>งบประมาณ<select id="fBudget"><option value="">ไม่จำกัด</option><option value="500">ไม่เกิน ฿500</option><option value="800">ไม่เกิน ฿800</option><option value="1200">ไม่เกิน ฿1,200</option></select></label>
+  </div>
+  <div class="msgs" id="msgs" aria-live="polite"></div>
+  <div class="quick" id="quick"></div>
+  <form class="cin" id="chatForm">
+    <input id="chatInput" placeholder="เช่น อยากได้อาหารเสริมผิวขาว" aria-label="พิมพ์ข้อความ" autocomplete="off">
+    <button type="submit">ส่ง</button>
+  </form>
+  <div class="mode" id="modeNote"></div>
+</section>
+
+<div id="layer"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- data ---------- */
+const CATS={skin:"ผิวพรรณ",immune:"ภูมิคุ้มกัน",bone:"กระดูกและข้อ",brain:"สมองและการนอน",eye:"สายตา",weight:"ควบคุมน้ำหนัก",gut:"ระบบขับถ่าย",hair:"ผมและเล็บ",sport:"ออกกำลังกาย",vital:"วิตามินรวม"};
+const R=(n,a,s,t,v=1)=>({n,a,s,t,v});
+const P=[
+ {id:"p1",name:"Gluta Bright + Vitamin C",brand:"Lumière Lab",cat:"skin",price:690,old:890,size:"30 แคปซูล",shape:"jar",c:["#f6e3c8","#d9a441"],tags:["ผิวขาว","กระจ่างใส","จุดด่างดำ","ต้านอนุมูลอิสระ"],age:[20,55],g:"all",
+  desc:"กลูต้าไธโอนผสมวิตามินซีจากอะเซโรลาเชอร์รี่ ช่วยดูแลผิวให้ดูกระจ่างใส สีผิวสม่ำเสมอ",ing:["กลูต้าไธโอน 250 mg","วิตามินซีจากอะเซโรลา 100 mg","สารสกัดเมล็ดองุ่น 50 mg","สารสกัดมะเขือเทศ (ไลโคปีน) 10 mg"],use:"รับประทานวันละ 1 แคปซูล ก่อนอาหารเช้า 30 นาที",
+  rv:[R("พิมพ์ชนก",28,5,"ทานมา 2 เดือน ผิวดูสว่างขึ้นจริง เพื่อนทักว่าหน้าใส"),R("Nok",34,4,"แคปซูลกลืนง่าย ไม่มีกลิ่น ต้องทานต่อเนื่องถึงจะเห็นผล"),R("อรอุมา",41,5,"สั่งซ้ำรอบที่ 3 แล้ว ส่งไวมาก")]},
+ {id:"p2",name:"Marine Collagen Peptide 10,000",brand:"Seaflora",cat:"skin",price:890,old:null,size:"ผง 200 g",shape:"tub",c:["#d7ecf2","#3c8fb0"],tags:["คอลลาเจน","ริ้วรอย","ผิวชุ่มชื้น","ข้อ"],age:[25,70],g:"all",
+  desc:"คอลลาเจนเปปไทด์จากปลาทะเลน้ำลึก โมเลกุลเล็ก ละลายง่าย ไม่มีกลิ่นคาว ผสมได้ทั้งน้ำและกาแฟ",ing:["คอลลาเจนไตรเปปไทด์ 10,000 mg ต่อช้อน","วิตามินซี 60 mg","ไฮยาลูรอนิก แอซิด 20 mg"],use:"ผสม 1 ช้อนตวงกับน้ำ 150 ml วันละ 1 ครั้ง",
+  rv:[R("คุณแม่ปุ้ย",46,5,"ละลายหมดจริง ไม่คาว ผิวดูอิ่มน้ำขึ้น"),R("Mint",30,4,"ใส่กาแฟทุกเช้า สะดวกดี กระปุกใหญ่คุ้ม")]},
+ {id:"p3",name:"L-Cysteine Clear Complex",brand:"Lumière Lab",cat:"skin",price:550,old:650,size:"30 แคปซูล",shape:"bottle",c:["#fbe0e4","#d0607a"],tags:["ผิวขาว","สิว","ผิวมัน","ผม"],age:[18,45],g:"all",
+  desc:"แอล-ซิสเทอีนร่วมกับซิงค์ ช่วยดูแลผิวให้ดูกระจ่างใสและลดความมันส่วนเกิน",ing:["แอล-ซิสเทอีน 500 mg","ซิงค์ 15 mg","วิตามินบี 3 (ไนอาซินาไมด์) 20 mg"],use:"รับประทานวันละ 1 แคปซูล หลังอาหารเช้า",
+  rv:[R("Beam",22,5,"หน้ามันน้อยลง สิวขึ้นน้อยลงด้วย"),R("ฝ้าย",26,4,"ผิวดูสว่างขึ้นแต่ต้องใช้เวลา 1 เดือนขึ้นไป")]},
+ {id:"p4",name:"Acne Zinc + Probiotic",brand:"Purely",cat:"skin",price:420,old:null,size:"30 แคปซูล",shape:"bottle",c:["#e1f1e4","#4b9a62"],tags:["สิว","ผิวมัน","วัยรุ่น","ภูมิคุ้มกัน"],age:[15,35],g:"all",
+  desc:"ซิงค์ผสมโพรไบโอติกส์ ดูแลผิวที่มีปัญหาสิวจากภายใน เหมาะกับวัยรุ่นและวัยทำงาน",ing:["ซิงค์กลูโคเนต 25 mg","แลคโตบาซิลลัส 2 พันล้าน CFU","สารสกัดใบบัวบก 100 mg"],use:"รับประทานวันละ 1 แคปซูล หลังอาหาร",
+  rv:[R("Tonkla",17,4,"สิวอุดตันลดลง ราคาไม่แพงสำหรับนักเรียน"),R("Jay",24,5,"ทานคู่กับล้างหน้าดีๆ สิวยุบไวขึ้น")]},
+ {id:"p5",name:"Vita-C 1000 Acerola",brand:"Purely",cat:"immune",price:320,old:390,size:"60 เม็ด",shape:"bottle",c:["#ffe6c7","#ef8a1f"],tags:["ภูมิคุ้มกัน","หวัด","กระจ่างใส","วิตามินซี"],age:[12,90],g:"all",
+  desc:"วิตามินซี 1,000 mg จากอะเซโรลาเชอร์รี่ แบบค่อยๆ ปลดปล่อย ช่วยเสริมภูมิคุ้มกันในชีวิตประจำวัน",ing:["วิตามินซี 1,000 mg","ซิตรัสไบโอฟลาโวนอยด์ 50 mg","โรสฮิป 25 mg"],use:"รับประทานวันละ 1 เม็ด หลังอาหาร",
+  rv:[R("ป้าแดง",63,5,"ทานทุกวัน หน้าฝนนี้ไม่ค่อยเป็นหวัดเลย"),R("Ploy",29,4,"เม็ดใหญ่นิดนึง แต่คุ้มราคา")]},
+ {id:"p6",name:"Kids Elderberry Gummy",brand:"Little Sprout",cat:"immune",price:390,old:null,size:"60 เม็ดเยลลี่",shape:"jar",c:["#e9dcf5","#7a4fb3"],tags:["เด็ก","ภูมิคุ้มกัน","หวัด","วิตามินซี"],age:[4,12],g:"all",
+  desc:"กัมมี่เอลเดอร์เบอร์รี่ผสมวิตามินซีและซิงค์ รสองุ่น เด็กทานง่าย ไม่ใส่สีสังเคราะห์",ing:["สารสกัดเอลเดอร์เบอร์รี่ 50 mg","วิตามินซี 30 mg","ซิงค์ 3 mg"],use:"เด็กอายุ 4 ปีขึ้นไป เคี้ยววันละ 2 เม็ด",
+  rv:[R("แม่น้องข้าวหอม",35,5,"ลูกชอบมาก ทวงกินทุกเช้า"),R("Pa Tee",38,4,"รสไม่หวานเกิน ดีครับ")]},
+ {id:"p7",name:"Calcium + D3 + K2",brand:"BoneWise",cat:"bone",price:590,old:null,size:"60 เม็ด",shape:"bottle",c:["#eef0f2","#6f7f8f"],tags:["กระดูก","แคลเซียม","ผู้สูงอายุ","วัยทอง"],age:[30,90],g:"all",
+  desc:"แคลเซียมแอล-ทรีโอเนตที่ดูดซึมง่าย ผสมวิตามินดี 3 และ K2 ช่วยพาแคลเซียมไปที่กระดูก",ing:["แคลเซียมแอล-ทรีโอเนต 750 mg","วิตามินดี 3 1,000 IU","วิตามิน K2 (MK-7) 90 mcg"],use:"รับประทานวันละ 1 เม็ด หลังอาหารเย็น",
+  rv:[R("คุณยายสมใจ",72,5,"เม็ดไม่ใหญ่ ทานแล้วไม่ท้องผูก"),R("Wan",52,5,"หมอแนะนำให้ทานแคลเซียม ตัวนี้ทานง่ายสุด")]},
+ {id:"p8",name:"Glucosamine + UC-II Joint",brand:"BoneWise",cat:"bone",price:1190,old:1390,size:"60 แคปซูล",shape:"bottle",c:["#e2e8f6","#3d5a9e"],tags:["ข้อ","ข้อเข่า","ผู้สูงอายุ","กระดูก"],age:[40,90],g:"all",
+  desc:"กลูโคซามีนผสม UC-II คอลลาเจนไทป์ทู ดูแลข้อต่อให้เคลื่อนไหวได้คล่องตัว",ing:["กลูโคซามีนซัลเฟต 1,500 mg","UC-II 40 mg","ขมิ้นชัน 100 mg"],use:"รับประทานวันละ 2 แคปซูล หลังอาหาร",
+  rv:[R("ลุงชาติ",66,5,"เดินขึ้นบันไดสบายขึ้น ทานมา 3 เดือน"),R("Oi",49,4,"ราคาสูงแต่เห็นผล")]},
+ {id:"p9",name:"Omega-3 Fish Oil 1000",brand:"Seaflora",cat:"brain",price:650,old:null,size:"90 ซอฟต์เจล",shape:"bottle",c:["#fff1c9","#c99410"],tags:["สมอง","หัวใจ","ความจำ","ไขมัน"],age:[12,90],g:"all",
+  desc:"น้ำมันปลาเข้มข้น EPA/DHA สูง ผ่านการกลั่นโมเลกุล ไม่มีกลิ่นคาวย้อน",ing:["น้ำมันปลา 1,000 mg","EPA 360 mg","DHA 240 mg","วิตามินอี 5 IU"],use:"รับประทานวันละ 1–2 ซอฟต์เจล พร้อมอาหาร",
+  rv:[R("Ken",37,5,"ไม่คาวย้อนจริง ทานคู่กับมื้อเที่ยง"),R("คุณพ่อเอก",58,4,"ขวดใหญ่ทาน 3 เดือน คุ้ม")]},
+ {id:"p10",name:"Ginkgo + Bacopa Memory",brand:"Mindful",cat:"brain",price:720,old:null,size:"30 แคปซูล",shape:"bottle",c:["#e4f0d8","#5f8a2e"],tags:["ความจำ","สมอง","สมาธิ","ผู้สูงอายุ"],age:[30,90],g:"all",
+  desc:"สารสกัดใบแปะก๊วยและพรมมิ ช่วยดูแลการไหลเวียนเลือดสู่สมอง เหมาะกับคนทำงานหนักและผู้สูงวัย",ing:["สารสกัดใบแปะก๊วย 120 mg","สารสกัดพรมมิ 300 mg","วิตามินบี 12 10 mcg"],use:"รับประทานวันละ 1 แคปซูล หลังอาหารเช้า",
+  rv:[R("Bow",33,4,"ช่วงอ่านหนังสือสอบรู้สึกโฟกัสดีขึ้น"),R("คุณตาประยูร",74,5,"ลูกซื้อให้ ทานต่อเนื่องมาครึ่งปี")]},
+ {id:"p11",name:"Magnesium Glycinate Sleep",brand:"Mindful",cat:"brain",price:480,old:560,size:"60 แคปซูล",shape:"bottle",c:["#dfe3f5","#4a4f9a"],tags:["นอนหลับ","ความเครียด","ตะคริว","ผ่อนคลาย"],age:[18,85],g:"all",
+  desc:"แมกนีเซียมไกลซิเนตผสมแอล-ธีอะนีนและคาโมมายล์ ช่วยให้ผ่อนคลายก่อนนอน",ing:["แมกนีเซียมไกลซิเนต 200 mg","แอล-ธีอะนีน 100 mg","สารสกัดคาโมมายล์ 50 mg"],use:"รับประทาน 2 แคปซูล ก่อนนอน 30 นาที",
+  rv:[R("Gift",31,5,"หลับลึกขึ้น ตื่นมาไม่งัวเงีย"),R("Arm",27,4,"ช่วยเรื่องตะคริวตอนกลางคืนด้วย")]},
+ {id:"p12",name:"Lutein + Zeaxanthin Bilberry",brand:"ClearView",cat:"eye",price:790,old:null,size:"30 แคปซูล",shape:"bottle",c:["#ffe0cc","#d0602a"],tags:["สายตา","จ้องจอ","ตาล้า","ผู้สูงอายุ"],age:[15,90],g:"all",
+  desc:"ลูทีนและซีแซนทีนจากดอกดาวเรือง ผสมบิลเบอร์รี่ ดูแลดวงตาของคนที่ใช้หน้าจอทั้งวัน",ing:["ลูทีน 20 mg","ซีแซนทีน 4 mg","สารสกัดบิลเบอร์รี่ 80 mg"],use:"รับประทานวันละ 1 แคปซูล หลังอาหาร",
+  rv:[R("Dev Tum",29,5,"ทำงานหน้าคอม 10 ชม. ตาล้าน้อยลง"),R("แม่ศรี",61,4,"ทานคู่กับน้ำมันปลา ดีค่ะ")]},
+ {id:"p13",name:"L-Carnitine + Green Tea",brand:"FitForm",cat:"weight",price:590,old:690,size:"60 แคปซูล",shape:"bottle",c:["#d8f2e6","#1f9a6a"],tags:["ลดน้ำหนัก","เผาผลาญ","ออกกำลังกาย","หุ่นดี"],age:[20,55],g:"all",
+  desc:"แอล-คาร์นิทีนผสมสารสกัดชาเขียว ช่วยในการเผาผลาญเมื่อใช้ร่วมกับการออกกำลังกายและควบคุมอาหาร",ing:["แอล-คาร์นิทีน 500 mg","สารสกัดชาเขียว (EGCG) 200 mg","โครเมียม 50 mcg"],use:"รับประทานวันละ 2 แคปซูล ก่อนออกกำลังกาย 30 นาที",
+  rv:[R("June",26,4,"ใช้คู่กับคาร์ดิโอ เหงื่อออกดี"),R("Bank",32,3,"ต้องคุมอาหารด้วยถึงจะเห็นผล",0)]},
+ {id:"p14",name:"Psyllium Fiber Detox",brand:"Purely",cat:"gut",price:350,old:null,size:"ผง 15 ซอง",shape:"box",c:["#f3ead7","#9a7a3c"],tags:["ขับถ่าย","ท้องผูก","ไฟเบอร์","ลดน้ำหนัก"],age:[15,85],g:"all",
+  desc:"ไฟเบอร์จากเปลือกเมล็ดเทียนเกล็ดหอย ผสมพรีไบโอติกส์ ช่วยให้ขับถ่ายเป็นปกติ อิ่มนานขึ้น",ing:["ไซเลียมฮัสก์ 5,000 mg","อินนูลิน 2,000 mg","สารสกัดมะนาว"],use:"ผสม 1 ซองกับน้ำ 200 ml ดื่มทันที ก่อนนอนหรือก่อนอาหาร",
+  rv:[R("Fah",35,5,"ขับถ่ายง่ายขึ้นตั้งแต่วันที่ 2"),R("ต้น",44,4,"รสมะนาวอร่อย ต้องดื่มน้ำตามเยอะๆ")]},
+ {id:"p15",name:"Biotin Hair & Nail",brand:"Lumière Lab",cat:"hair",price:460,old:null,size:"60 เม็ด",shape:"bottle",c:["#f6dfef","#a8487e"],tags:["ผมร่วง","ผม","เล็บ","ผิว"],age:[18,65],g:"all",
+  desc:"ไบโอตินผสมซิงค์และสารสกัดหญ้าหางม้า ดูแลเส้นผมและเล็บให้แข็งแรง",ing:["ไบโอติน 5,000 mcg","ซิงค์ 10 mg","สารสกัดหญ้าหางม้า 100 mg"],use:"รับประทานวันละ 1 เม็ด หลังอาหาร",
+  rv:[R("Praew",30,5,"ผมร่วงตอนสระน้อยลงชัดเจน"),R("Tarn",42,4,"เล็บแข็งขึ้น ไม่เปราะ")]},
+ {id:"p16",name:"Whey Isolate Chocolate",brand:"FitForm",cat:"sport",price:1450,old:1690,size:"ผง 900 g",shape:"tub",c:["#e9dccf","#6b4226"],tags:["โปรตีน","สร้างกล้าม","ออกกำลังกาย","ลดน้ำหนัก"],age:[15,65],g:"all",
+  desc:"เวย์โปรตีนไอโซเลต 27 g ต่อช้อน ไขมันและแลคโตสต่ำ รสช็อกโกแลตเข้มข้น",ing:["เวย์โปรตีนไอโซเลต 27 g","BCAA 6 g","น้ำตาล 1 g"],use:"ผสม 1 สกู๊ปกับน้ำหรือนม 250 ml หลังออกกำลังกาย",
+  rv:[R("Gym Bro Max",24,5,"ละลายดี ไม่เป็นก้อน รสช็อกโกแลตอร่อย"),R("Nat",29,5,"ทานแล้วท้องไม่อืด เหมาะกับคนแพ้นมวัวนิดๆ")]},
+ {id:"p17",name:"Women 50+ Multivitamin",brand:"Vitara Select",cat:"vital",price:850,old:null,size:"60 เม็ด",shape:"bottle",c:["#f8e1d6","#b4553a"],tags:["วิตามินรวม","วัยทอง","ผู้สูงอายุ","กระดูก"],age:[45,90],g:"female",
+  desc:"วิตามินรวมสูตรผู้หญิงวัย 50 ปีขึ้นไป เสริมแคลเซียม วิตามินดี และสารสกัดถั่วเหลือง",ing:["วิตามินและแร่ธาตุ 24 ชนิด","ไอโซฟลาโวนจากถั่วเหลือง 40 mg","วิตามินดี 3 800 IU"],use:"รับประทานวันละ 1 เม็ด หลังอาหารเช้า",
+  rv:[R("คุณนิด",55,5,"ทานตัวเดียวครบ ไม่ต้องกินหลายเม็ด"),R("พี่หน่อย",52,4,"รู้สึกสดชื่นขึ้น ร้อนวูบวาบน้อยลง")]},
+ {id:"p18",name:"Men Vitality Zinc + Maca",brand:"Vitara Select",cat:"vital",price:780,old:890,size:"60 แคปซูล",shape:"bottle",c:["#dde6ee","#2c4a66"],tags:["วิตามินรวม","พลังงาน","ผู้ชาย","อ่อนเพลีย"],age:[25,70],g:"male",
+  desc:"วิตามินรวมสูตรผู้ชาย ผสมซิงค์ มาคา และโสม ช่วยให้กระปรี้กระเปร่าตลอดวัน",ing:["ซิงค์ 15 mg","สารสกัดมาคา 500 mg","สารสกัดโสมเกาหลี 100 mg","วิตามินบีรวม"],use:"รับประทานวันละ 2 แคปซูล หลังอาหารเช้า",
+  rv:[R("Pong",38,5,"ทำงานหนักแต่ไม่ค่อยเพลีย"),R("Kong",45,4,"ทานคู่กับออกกำลังกาย รู้สึกฟิตขึ้น")]},
+ {id:"p19",name:"Probiotic 10 Strains",brand:"Purely",cat:"gut",price:690,old:null,size:"30 แคปซูล",shape:"bottle",c:["#e0f0f0","#2a8a8a"],tags:["ลำไส้","ขับถ่าย","ภูมิคุ้มกัน","ท้องอืด"],age:[12,90],g:"all",
+  desc:"โพรไบโอติกส์ 10 สายพันธุ์ 20 พันล้าน CFU แคปซูลทนกรดในกระเพาะ ไม่ต้องแช่เย็น",ing:["โพรไบโอติกส์ 10 สายพันธุ์ 20 พันล้าน CFU","อินนูลิน 100 mg"],use:"รับประทานวันละ 1 แคปซูล ก่อนนอน",
+  rv:[R("Aom",33,5,"ท้องอืดน้อยลงมาก"),R("ลุงวิชัย",67,4,"ขับถ่ายเป็นเวลา ทานง่าย")]},
+ {id:"p20",name:"Vitamin D3 + Zinc Daily",brand:"Purely",cat:"immune",price:290,old:null,size:"60 เม็ด",shape:"bottle",c:["#fff4cf","#c7a21a"],tags:["ภูมิคุ้มกัน","วิตามินดี","กระดูก","อ่อนเพลีย"],age:[12,90],g:"all",
+  desc:"วิตามินดี 3 2,000 IU และซิงค์ สำหรับคนที่โดนแดดน้อย ทำงานในออฟฟิศ",ing:["วิตามินดี 3 2,000 IU","ซิงค์ 10 mg"],use:"รับประทานวันละ 1 เม็ด พร้อมอาหาร",
+  rv:[R("Cream",27,5,"ผลเลือดวิตามินดีต่ำ หมอแนะนำ ทานง่าย ถูก"),R("Top",35,4,"ราคาดีมาก")]}
+];
+const byId=Object.fromEntries(P.map(p=>[p.id,p]));
+const avg=p=>{const all=allReviews(p);return all.reduce((s,r)=>s+r.s,0)/all.length};
+
+/* ---------- storage helpers ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let cart=store.get("vt_cart",{p1:1,p9:1});
+let myReviews=store.get("vt_reviews",{});
+const allReviews=p=>[...(myReviews[p.id]||[]),...p.rv];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const baht=n=>"฿"+n.toLocaleString("th-TH");
+const stars=n=>"★★★★★".slice(0,Math.round(n))+"☆☆☆☆☆".slice(0,5-Math.round(n));
+
+/* ---------- product art ---------- */
+function art(p){
+  const [bg,ac]=p.c, short=p.name.split(" ")[0];
+  const label=`<text x="60" y="96" text-anchor="middle" font-family="Mitr,sans-serif" font-size="13" fill="${ac}">${esc(short.slice(0,11))}</text><text x="60" y="110" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif" font-size="7" fill="#556">${esc(p.brand)}</text>`;
+  let body;
+  if(p.shape==="jar") body=`<rect x="30" y="34" width="60" height="12" rx="3" fill="${ac}"/><rect x="24" y="46" width="72" height="92" rx="14" fill="#fff"/><rect x="24" y="78" width="72" height="40" fill="${bg}"/>${label}`;
+  else if(p.shape==="tub") body=`<rect x="18" y="40" width="84" height="14" rx="4" fill="${ac}"/><path d="M20 54h80l-6 86H26z" fill="#fff"/><rect x="22" y="80" width="76" height="40" fill="${bg}"/>${label}`;
+  else if(p.shape==="box") body=`<rect x="22" y="30" width="76" height="110" rx="4" fill="#fff"/><rect x="22" y="30" width="76" height="22" rx="4" fill="${ac}"/><rect x="22" y="78" width="76" height="42" fill="${bg}"/>${label}`;
+  else body=`<rect x="44" y="18" width="32" height="16" rx="3" fill="${ac}"/><rect x="48" y="34" width="24" height="8" fill="#e8ece8"/><rect x="26" y="42" width="68" height="98" rx="16" fill="#fff"/><rect x="26" y="78" width="68" height="42" fill="${bg}"/>${label}`;
+  return `<svg viewBox="0 0 120 150" aria-hidden="true"><ellipse cx="60" cy="143" rx="40" ry="5" fill="#000" opacity=".08"/>${body}<rect x="30" y="50" width="6" height="80" rx="3" fill="#fff" opacity=".5"/></svg>`;
+}
+const shotBg=p=>`background:linear-gradient(160deg,${p.c[0]},color-mix(in srgb,${p.c[0]} 55%,var(--surface)))`;
+
+/* ---------- state + rendering ---------- */
+const state={view:"list",id:null,q:"",cat:"all",sort:"pop",age:"",tab:"desc"};
+const $=s=>document.querySelector(s);
+const main=$("#main");
+
+function matches(p,q){
+  if(!q) return true;
+  const hay=(p.name+" "+p.brand+" "+CATS[p.cat]+" "+p.tags.join(" ")+" "+p.desc+" "+p.ing.join(" ")).toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(w=>hay.includes(w));
+}
+function filtered(){
+  let list=P.filter(p=>matches(p,state.q)&&(state.cat==="all"||p.cat===state.cat));
+  if(state.age){const a=+state.age;list=list.filter(p=>a>=p.age[0]&&a<=p.age[1])}
+  const s={pop:(a,b)=>allReviews(b).length*avg(b)-allReviews(a).length*avg(a),low:(a,b)=>a.price-b.price,high:(a,b)=>b.price-a.price,rate:(a,b)=>avg(b)-avg(a)}[state.sort];
+  return list.sort(s);
+}
+function cardHTML(p){
+  const off=p.old?Math.round((1-p.price/p.old)*100):0;
+  return `<article class="card">
+    <button class="shot" style="${shotBg(p)}" data-open="${p.id}" aria-label="ดู ${esc(p.name)}">${art(p)}<span class="tag">${CATS[p.cat]}</span>${off?`<span class="tag sale">-${off}%</span>`:""}</button>
+    <div class="body"><span class="brandname">${esc(p.brand)}</span>
+      <h3><button data-open="${p.id}">${esc(p.name)}</button></h3>
+      <span class="meta"><span class="stars">${stars(avg(p))}</span> <span class="num">${avg(p).toFixed(1)}</span> · ${allReviews(p).length} รีวิว · ${p.size}</span>
+      <div class="pricerow"><span class="price num">${baht(p.price)}${p.old?`<s>${baht(p.old)}</s>`:""}</span>
+      <button class="add" data-add="${p.id}" aria-label="เพิ่ม ${esc(p.name)} ลงตะกร้า"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    </div></article>`;
+}
+function renderList(){
+  const list=filtered();
+  const chips=[["all","ทั้งหมด"],...Object.entries(CATS)].map(([k,v])=>`<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${v}</button>`).join("");
+  main.innerHTML=`
+  <section class="intro">
+    <div><h1>อาหารเสริมที่ <em>เหมาะกับคุณ</em><br>เลือกง่ายขึ้นด้วยผู้ช่วย AI</h1>
+      <p>บอกเป้าหมาย อายุ และงบประมาณ น้องวีจะเลือกสินค้าที่ตรงที่สุดจาก ${P.length} รายการ พร้อมอธิบายเหตุผล ส่งฟรีเมื่อสั่งครบ ฿990</p>
+      <div class="cta"><button class="btn primary" data-ask="">ปรึกษาผู้ช่วย AI</button><button class="btn" data-ask="อยากได้อาหารเสริมผิวขาว กระจ่างใส">ผิวขาว กระจ่างใส</button><button class="btn" data-ask="นอนไม่ค่อยหลับ เครียด">นอนไม่หลับ</button></div></div>
+    <div class="facts"><div class="fact"><b class="num">${P.length}</b><span>สินค้าในร้าน</span></div><div class="fact"><b>อย.</b><span>มีเลขทะเบียนทุกชิ้น</span></div><div class="fact"><b class="num">1–2 วัน</b><span>จัดส่งทั่วประเทศ</span></div></div>
+  </section>
+  <div class="toolbar"><div class="chips" role="group" aria-label="หมวดหมู่">${chips}</div>
+    <div class="selects">
+      <select id="ageSel" aria-label="กรองตามอายุ"><option value="">ทุกช่วงอายุ</option><option value="8">เด็ก (4–12)</option><option value="16">วัยรุ่น (13–19)</option><option value="28">20–34 ปี</option><option value="42">35–49 ปี</option><option value="57">50–64 ปี</option><option value="70">65 ปีขึ้นไป</option></select>
+      <select id="sortSel" aria-label="เรียงลำดับ"><option value="pop">ยอดนิยม</option><option value="rate">คะแนนรีวิว</option><option value="low">ราคา ต่ำ → สูง</option><option value="high">ราคา สูง → ต่ำ</option></select>
+    </div></div>
+  <div class="resultline">${state.q?`ผลการค้นหา “${esc(state.q)}” · `:""}พบ <b class="num">${list.length}</b> รายการ</div>
+  <div class="grid">${list.length?list.map(cardHTML).join(""):`<div class="empty">ไม่พบสินค้าที่ตรงกับ “${esc(state.q)}”<br>ลองคำอื่น หรือ <button class="btn" data-ask="${esc(state.q)}" style="margin-top:10px">ถามผู้ช่วย AI</button></div>`}</div>`;
+  $("#ageSel").value=state.age;$("#sortSel").value=state.sort;
+}
+function similar(p){
+  return P.filter(x=>x.id!==p.id).map(x=>({x,s:(x.cat===p.cat?3:0)+x.tags.filter(t=>p.tags.includes(t)).length*2-Math.abs(x.price-p.price)/1000}))
+    .sort((a,b)=>b.s-a.s).slice(0,4).map(o=>o.x);
+}
+function renderDetail(){
+  const p=byId[state.id], rs=allReviews(p), a=avg(p);
+  const dist=[5,4,3,2,1].map(n=>{const c=rs.filter(r=>r.s===n).length;return `<div class="bar"><span>${n}★</span><i><b style="width:${c/rs.length*100}%"></b></i><span class="num">${c}</span></div>`}).join("");
+  const gTxt={all:"ทุกเพศ",female:"ผู้หญิง",male:"ผู้ชาย"}[p.g];
+  const panels={
+    desc:`<p>${esc(p.desc)}</p><p class="hint">ผลลัพธ์อาจแตกต่างกันในแต่ละบุคคล ควรรับประทานอาหารให้ครบ 5 หมู่ควบคู่กัน</p>`,
+    ing:`<ul>${p.ing.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`,
+    use:`<p>${esc(p.use)}</p><p class="hint">ห้ามรับประทานเกินปริมาณที่แนะนำ ผู้ตั้งครรภ์ ให้นมบุตร หรือมีโรคประจำตัวควรปรึกษาแพทย์ก่อน</p>`
+  };
+  main.innerHTML=`
+  <button class="back" id="back">← กลับไปดูสินค้าทั้งหมด</button>
+  <section class="detail">
+    <div class="gallery" style="${shotBg(p)}">${art(p)}</div>
+    <div style="min-width:0"><span class="brandname">${esc(p.brand)} · ${CATS[p.cat]}</span>
+      <h1>${esc(p.name)}</h1>
+      <div class="meta"><span class="stars">${stars(a)}</span> <span class="num">${a.toFixed(1)}</span> · <a href="#reviews" style="color:inherit">${rs.length} รีวิว</a></div>
+      <p class="lead">${esc(p.desc)}</p>
+      <div class="price num" style="font-size:28px">${baht(p.price)}${p.old?`<s>${baht(p.old)}</s>`:""}</div>
+      <div class="pills">${p.tags.map(t=>`<span class="pill">${esc(t)}</span>`).join("")}</div>
+      <dl class="specs"><dt>ขนาด</dt><dd>${p.size}</dd><dt>เหมาะกับ</dt><dd>อายุ ${p.age[0]}–${p.age[1]} ปี · ${gTxt}</dd><dt>วิธีทาน</dt><dd>${esc(p.use)}</dd></dl>
+      <div class="buyrow"><div class="qty"><button id="qm" aria-label="ลดจำนวน">−</button><span id="qv">1</span><button id="qp" aria-label="เพิ่มจำนวน">+</button></div>
+        <button class="btn primary" id="addD">เพิ่มลงตะกร้า</button><button class="btn accent" id="buyD">ซื้อเลย</button></div>
+    </div>
+  </section>
+  <div class="tabs" role="tablist">${[["desc","รายละเอียด"],["ing","ส่วนประกอบ"],["use","วิธีรับประทาน"]].map(([k,v])=>`<button role="tab" data-tab="${k}" aria-selected="${state.tab===k}">${v}</button>`).join("")}</div>
+  <div class="tabpanel" role="tabpanel">${panels[state.tab]}</div>
+
+  <div class="section-h" id="reviews"><h2>รีวิวจากผู้ใช้</h2><span class="hint">รีวิวตัวอย่าง (demo)</span></div>
+  <div class="reviewwrap">
+    <div class="summary"><div class="big num">${a.toFixed(1)}</div><div class="stars" style="font-size:16px">${stars(a)}</div><div class="hint">จาก ${rs.length} รีวิว</div><div style="display:grid;gap:4px;margin-top:10px">${dist}</div></div>
+    <div class="reviews">${rs.map(r=>`<div class="review"><header><b>${esc(r.n)}</b><span class="hint">อายุ ${esc(r.a)} ปี</span><span class="stars">${stars(r.s)}</span>${r.v?`<span class="verified">✓ ซื้อแล้ว</span>`:""}${r.mine?`<span class="hint">· รีวิวของคุณ</span>`:""}</header><p>${esc(r.t)}</p></div>`).join("")}
+      <form class="rform" id="rform"><b>เขียนรีวิวของคุณ</b>
+        <div class="starpick" id="starpick">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" aria-label="${n} ดาว" class="${n<=5?"on":""}">★</button>`).join("")}</div>
+        <div class="row"><input id="rName" placeholder="ชื่อที่แสดง" maxlength="30" required><input id="rAge" type="number" min="5" max="100" placeholder="อายุ" style="max-width:100px" required></div>
+        <textarea id="rText" rows="3" placeholder="เล่าประสบการณ์การใช้งาน" maxlength="400" required></textarea>
+        <div><button class="btn primary" type="submit">ส่งรีวิว</button></div></form>
+    </div>
+  </div>
+
+  <div class="section-h"><h2>สินค้าที่คล้ายกัน</h2><span class="hint">หมวดหมู่และประโยชน์ใกล้เคียง</span></div>
+  <div class="grid">${similar(p).map(cardHTML).join("")}</div>`;
+  let q=1,rating=5;
+  $("#qm").onclick=()=>{q=Math.max(1,q-1);$("#qv").textContent=q};
+  $("#qp").onclick=()=>{q=Math.min(20,q+1);$("#qv").textContent=q};
+  $("#addD").onclick=()=>addToCart(p.id,q);
+  $("#buyD").onclick=()=>{addToCart(p.id,q,true);openCheckout()};
+  $("#back").onclick=()=>go("list");
+  $("#starpick").onclick=e=>{const b=e.target.closest("[data-star]");if(!b)return;rating=+b.dataset.star;document.querySelectorAll("#starpick button").forEach(x=>x.classList.toggle("on",+x.dataset.star<=rating))};
+  $("#rform").onsubmit=e=>{e.preventDefault();
+    (myReviews[p.id]=myReviews[p.id]||[]).unshift({n:$("#rName").value.trim(),a:+$("#rAge").value,s:rating,t:$("#rText").value.trim(),v:0,mine:1});
+    store.set("vt_reviews",myReviews);toast("บันทึกรีวิวแล้ว ขอบคุณค่ะ");renderDetail();document.getElementById("reviews").scrollIntoView()};
+}
+function render(){state.view==="detail"?renderDetail():renderList()}
+function go(view,id){state.view=view;state.id=id||null;state.tab="desc";render();window.scrollTo({top:0})}
+
+/* ---------- events ---------- */
+main.addEventListener("click",e=>{
+  const o=e.target.closest("[data-open]"),a=e.target.closest("[data-add]"),c=e.target.closest("[data-cat]"),t=e.target.closest("[data-tab]"),k=e.target.closest("[data-ask]");
+  if(a){addToCart(a.dataset.add,1);return}
+  if(o){go("detail",o.dataset.open);return}
+  if(c){state.cat=c.dataset.cat;renderList();return}
+  if(t){state.tab=t.dataset.tab;renderDetail();return}
+  if(k){openChat(k.dataset.ask)}
+});
+main.addEventListener("change",e=>{if(e.target.id==="ageSel"){state.age=e.target.value;renderList()}if(e.target.id==="sortSel"){state.sort=e.target.value;renderList()}});
+let qt;$("#q").addEventListener("input",e=>{clearTimeout(qt);qt=setTimeout(()=>{state.q=e.target.value.trim();if(state.view!=="list"){state.view="list"}renderList()},150)});
+$("#home").onclick=()=>{state.q="";state.cat="all";$("#q").value="";go("list")};
+
+/* ---------- cart ---------- */
+const count=()=>Object.values(cart).reduce((a,b)=>a+b,0);
+const subtotal=()=>Object.entries(cart).reduce((s,[id,q])=>s+byId[id].price*q,0);
+function saveCart(){store.set("vt_cart",cart);$("#cartCount").textContent=count()}
+function addToCart(id,q=1,silent){cart[id]=(cart[id]||0)+q;saveCart();if(!silent)toast(`เพิ่ม ${byId[id].name} ลงตะกร้าแล้ว`)}
+const FREE=990;
+function openCart(){
+  const layer=$("#layer");
+  const draw=()=>{
+    const ids=Object.keys(cart),sub=subtotal(),left=Math.max(0,FREE-sub);
+    layer.innerHTML=`<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="ตะกร้าสินค้า">
+      <div class="dhead"><h2>ตะกร้าสินค้า <span class="hint num">(${count()})</span></h2><button class="x" data-close aria-label="ปิด">✕</button></div>
+      <div class="dbody">${ids.length?ids.map(id=>{const p=byId[id];return `<div class="line"><div class="thumb" style="${shotBg(p)}">${art(p)}</div>
+        <div style="min-width:0"><div class="nm">${esc(p.name)}</div><div class="hint num">${baht(p.price)} · ${p.size}</div><button class="rm" data-rm="${id}">ลบออก</button></div>
+        <div style="display:grid;justify-items:end;gap:6px"><b class="num">${baht(p.price*cart[id])}</b><div class="qty"><button data-dec="${id}" aria-label="ลด">−</button><span>${cart[id]}</span><button data-inc="${id}" aria-label="เพิ่ม">+</button></div></div></div>`}).join("")
+        :`<div class="empty" style="margin-top:16px">ยังไม่มีสินค้าในตะกร้า<br><button class="btn" data-close style="margin-top:10px">เลือกซื้อสินค้า</button></div>`}</div>
+      ${ids.length?`<div class="dfoot"><div class="hint">${left?`ซื้อเพิ่มอีก <b class="num">${baht(left)}</b> เพื่อรับส่งฟรี`:"ได้รับสิทธิ์ส่งฟรีแล้ว"}</div><div class="prog"><b style="width:${Math.min(100,sub/FREE*100)}%"></b></div>
+        <div class="tot grand"><span>ยอดรวม</span><span class="num">${baht(sub)}</span></div><button class="btn primary" id="toCheckout">ดำเนินการชำระเงิน</button></div>`:""}
+    </aside>`;
+    const tc=$("#toCheckout");if(tc)tc.onclick=openCheckout;
+  };
+  layer.onclick=e=>{
+    const t=e.target;
+    if(t.closest("[data-close]")){layer.innerHTML="";return}
+    const i=t.closest("[data-inc]"),d=t.closest("[data-dec]"),r=t.closest("[data-rm]");
+    if(i)cart[i.dataset.inc]++;
+    if(d){const id=d.dataset.dec;cart[id]--;if(cart[id]<1)delete cart[id]}
+    if(r)delete cart[r.dataset.rm];
+    if(i||d||r){saveCart();draw()}
+  };
+  draw();
+}
+$("#openCart").onclick=openCart;
+
+/* ---------- checkout ---------- */
+const COUPONS={WELCOME10:{type:"pct",v:10,label:"ลด 10%"},VITA100:{type:"amt",v:100,label:"ลด ฿100 (ขั้นต่ำ ฿800)",min:800}};
+function openCheckout(){
+  if(!count()){toast("ตะกร้ายังว่างอยู่");return}
+  const layer=$("#layer");let step=1,coupon=null,ship={},pay="promptpay";
+  const totals=()=>{const sub=subtotal();let disc=0;if(coupon){const c=COUPONS[coupon];disc=c.type==="pct"?Math.round(sub*c.v/100):(sub>=(c.min||0)?c.v:0)}const fee=sub-disc>=FREE?0:50;return{sub,disc,fee,total:sub-disc+fee}};
+  const sumHTML=()=>{const t=totals();return `<aside class="osum"><b>สรุปคำสั่งซื้อ</b>${Object.entries(cart).map(([id,q])=>`<div class="it"><span>${esc(byId[id].name)} × ${q}</span><span class="num">${baht(byId[id].price*q)}</span></div>`).join("")}
+    <hr style="border:0;border-top:1px solid var(--line);width:100%"><div class="it"><span>ยอดสินค้า</span><span class="num">${baht(t.sub)}</span></div>
+    ${t.disc?`<div class="it" style="color:var(--ok)"><span>ส่วนลด ${coupon}</span><span class="num">−${baht(t.disc)}</span></div>`:""}
+    <div class="it"><span>ค่าจัดส่ง</span><span class="num">${t.fee?baht(t.fee):"ฟรี"}</span></div>
+    <div class="it tot grand"><span>ยอดชำระ</span><span class="num">${baht(t.total)}</span></div>
+    ${step<3?`<div class="coupon"><input id="cp" placeholder="โค้ดส่วนลด" value="${coupon||""}" aria-label="โค้ดส่วนลด"><button class="btn" type="button" id="cpBtn">ใช้</button></div><div class="hint">ลองโค้ด WELCOME10 หรือ VITA100</div><div class="err" id="cpErr"></div>`:""}</aside>`};
+  const stepsHTML=()=>`<div class="steps">${["ที่อยู่จัดส่ง","ชำระเงิน","เสร็จสิ้น"].map((s,i)=>`<span class="${i+1===step?"on":""}">${i+1}. ${s}</span>`).join("")}</div>`;
+  const shell=inner=>`<div class="scrim"></div><div class="modal" role="dialog" aria-label="ชำระเงิน"><div class="mbox"><div class="dhead" style="border:0"><h2>ชำระเงิน</h2><button class="x" data-xc aria-label="ปิด">✕</button></div>${stepsHTML()}${inner}</div></div>`;
+  function draw(){
+    if(step===1){
+      layer.innerHTML=shell(`<div class="co"><form id="f1" novalidate>
+        <label class="fld">ชื่อ–นามสกุล<input id="sName" autocomplete="name" value="${esc(ship.name||"")}" required></label>
+        <div class="two"><label class="fld">เบอร์โทร<input id="sPhone" inputmode="tel" autocomplete="tel" placeholder="08x-xxx-xxxx" value="${esc(ship.phone||"")}" required></label>
+        <label class="fld">อีเมล (รับใบเสร็จ)<input id="sMail" type="email" autocomplete="email" value="${esc(ship.mail||"")}"></label></div>
+        <label class="fld">ที่อยู่<textarea id="sAddr" rows="2" autocomplete="street-address" required>${esc(ship.addr||"")}</textarea></label>
+        <div class="two"><label class="fld">จังหวัด<input id="sProv" value="${esc(ship.prov||"")}" required></label><label class="fld">รหัสไปรษณีย์<input id="sZip" inputmode="numeric" maxlength="5" value="${esc(ship.zip||"")}" required></label></div>
+        <div class="err" id="e1"></div><button class="btn primary" type="submit">ถัดไป: เลือกวิธีชำระเงิน</button></form>${sumHTML()}</div>`);
+      $("#f1").onsubmit=e=>{e.preventDefault();
+        ship={name:$("#sName").value.trim(),phone:$("#sPhone").value.trim(),mail:$("#sMail").value.trim(),addr:$("#sAddr").value.trim(),prov:$("#sProv").value.trim(),zip:$("#sZip").value.trim()};
+        const bad=[];const mark=(id,ok)=>{$(id).setAttribute("aria-invalid",!ok);if(!ok)bad.push(id)};
+        mark("#sName",ship.name.length>1);mark("#sPhone",/^0\d{8,9}$/.test(ship.phone.replace(/\D/g,"")));mark("#sAddr",ship.addr.length>4);mark("#sProv",ship.prov.length>1);mark("#sZip",/^\d{5}$/.test(ship.zip));
+        if(ship.mail)mark("#sMail",/^\S+@\S+\.\S+$/.test(ship.mail));
+        if(bad.length){$("#e1").textContent="กรุณากรอกข้อมูลที่ไฮไลต์ให้ถูกต้อง (เบอร์โทร 9–10 หลัก, รหัสไปรษณีย์ 5 หลัก)";$(bad[0]).focus();return}
+        step=2;draw()};
+    } else if(step===2){
+      const t=totals();
+      layer.innerHTML=shell(`<div class="co"><form id="f2" novalidate>
+        <div class="demo">โหมดสาธิต: ไม่มีการตัดเงินจริง และไม่มีข้อมูลถูกส่งออกจากหน้านี้ กรุณาอย่ากรอกเลขบัตรจริง</div>
+        <div class="payopts">
+          <label class="payopt"><input type="radio" name="pay" value="promptpay" ${pay==="promptpay"?"checked":""}> พร้อมเพย์ / QR Code</label>
+          <label class="payopt"><input type="radio" name="pay" value="card" ${pay==="card"?"checked":""}> บัตรเครดิต / เดบิต</label>
+          <label class="payopt"><input type="radio" name="pay" value="cod" ${pay==="cod"?"checked":""}> เก็บเงินปลายทาง (+฿20)</label>
+        </div>
+        <div id="payBox"></div><div class="err" id="e2"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="b2">ย้อนกลับ</button><button class="btn primary" type="submit">ยืนยันชำระ ${baht(t.total+(pay==="cod"?20:0))}</button></div></form>${sumHTML()}</div>`);
+      const box=$("#payBox");
+      if(pay==="promptpay"){box.innerHTML=`<div style="display:grid;justify-items:center;gap:6px;padding:8px"><canvas id="qr" width="29" height="29" style="width:160px;height:160px"></canvas><span class="hint">สแกนเพื่อชำระ ${baht(t.total)} (QR ตัวอย่าง)</span></div>`;drawQR($("#qr"))}
+      if(pay==="card")box.innerHTML=`<div style="display:grid;gap:10px"><label class="fld">หมายเลขบัตร<input id="cNum" inputmode="numeric" placeholder="4242 4242 4242 4242" maxlength="19" autocomplete="off"></label>
+        <div class="two"><label class="fld">วันหมดอายุ<input id="cExp" placeholder="MM/YY" maxlength="5" autocomplete="off"></label><label class="fld">CVV<input id="cCvv" inputmode="numeric" maxlength="4" autocomplete="off"></label></div></div>`;
+      if(pay==="cod")box.innerHTML=`<p class="hint">ชำระเงินสดกับพนักงานส่งของเมื่อได้รับสินค้า</p>`;
+      const cn=$("#cNum");if(cn)cn.oninput=()=>{cn.value=cn.value.replace(/\D/g,"").slice(0,16).replace(/(.{4})/g,"$1 ").trim()};
+      const ce=$("#cExp");if(ce)ce.oninput=()=>{let v=ce.value.replace(/\D/g,"").slice(0,4);if(v.length>2)v=v.slice(0,2)+"/"+v.slice(2);ce.value=v};
+      $("#f2").onchange=e=>{if(e.target.name==="pay"){pay=e.target.value;draw()}};
+      $("#b2").onclick=()=>{step=1;draw()};
+      $("#f2").onsubmit=e=>{e.preventDefault();
+        if(pay==="card"){const n=$("#cNum").value.replace(/\D/g,""),ex=$("#cExp").value,cv=$("#cCvv").value;
+          if(n.length<15||!/^(0[1-9]|1[0-2])\/\d\d$/.test(ex)||!/^\d{3,4}$/.test(cv)){$("#e2").textContent="ข้อมูลบัตรไม่ครบ: ตรวจหมายเลขบัตร 16 หลัก, วันหมดอายุ MM/YY และ CVV 3 หลัก";return}}
+        const btn=e.submitter||$("#f2 [type=submit]");btn.disabled=true;btn.textContent="กำลังดำเนินการ…";
+        setTimeout(()=>{step=3;draw()},900)};
+    } else {
+      const t=totals(),order="VT"+Date.now().toString().slice(-8);
+      const items=Object.entries(cart).map(([id,q])=>`${byId[id].name} × ${q}`).join(", ");
+      layer.innerHTML=shell(`<div class="done"><div class="ok">✓</div><h2>สั่งซื้อสำเร็จ</h2>
+        <p style="margin:0">หมายเลขคำสั่งซื้อ <b style="font-family:var(--f-mono)">${order}</b></p>
+        <p class="hint" style="max-width:48ch;margin:0">${esc(items)}<br>ยอดชำระ ${baht(t.total+(pay==="cod"?20:0))} · ${{promptpay:"พร้อมเพย์",card:"บัตรเครดิต",cod:"เก็บเงินปลายทาง"}[pay]}<br>จัดส่งถึง ${esc(ship.name)}, ${esc(ship.prov)} ${esc(ship.zip)} ภายใน 1–2 วันทำการ</p>
+        <button class="btn primary" data-xc>เลือกซื้อต่อ</button></div>`);
+      cart={};saveCart();
+    }
+    const cb=$("#cpBtn");if(cb)cb.onclick=()=>{const v=$("#cp").value.trim().toUpperCase();if(!v){coupon=null;draw();return}
+      if(!COUPONS[v]){$("#cpErr").textContent="ไม่พบโค้ดนี้ ตรวจตัวสะกดอีกครั้ง";return}
+      const c=COUPONS[v];if(c.min&&subtotal()<c.min){$("#cpErr").textContent=`โค้ดนี้ใช้ได้เมื่อซื้อครบ ${baht(c.min)}`;return}
+      coupon=v;toast("ใช้โค้ด "+v+" แล้ว: "+c.label);draw()};
+  }
+  layer.onclick=e=>{if(e.target.closest("[data-xc]")){layer.innerHTML="";if(step===3)go("list")}};
+  draw();
+}
+function drawQR(cv){const x=cv.getContext("2d"),n=29;x.fillStyle="#fff";x.fillRect(0,0,n,n);x.fillStyle="#111";let s=7;
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){s=(s*9301+49297)%233280;if(s/233280>.52)x.fillRect(i,j,1,1)}
+  [[0,0],[n-7,0],[0,n-7]].forEach(([a,b])=>{x.fillStyle="#111";x.fillRect(a,b,7,7);x.fillStyle="#fff";x.fillRect(a+1,b+1,5,5);x.fillStyle="#111";x.fillRect(a+2,b+2,3,3)})}
+
+/* ---------- toast ---------- */
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2200)}
+
+/* ---------- chatbot ---------- */
+const chat=$("#chat"),msgs=$("#msgs");
+let sample=null,turns=[],busy=false,ctl=null;
+const QUICK=["อยากได้อาหารเสริมผิวขาว","ลดน้ำหนัก","นอนไม่หลับ","ปวดข้อเข่า","ภูมิคุ้มกันสำหรับเด็ก","ผมร่วง","ตาล้าจากจอคอม"];
+$("#quick").innerHTML=QUICK.map(q=>`<button type="button">${q}</button>`).join("");
+$("#quick").onclick=e=>{const b=e.target.closest("button");if(b)send(b.textContent)};
+function openChat(text){chat.hidden=false;$("#fab").hidden=true;if(!msgs.children.length)greet();if(text)send(text);else $("#chatInput").focus()}
+$("#fab").onclick=()=>openChat();
+$("#closeChat").onclick=()=>{chat.hidden=true;$("#fab").hidden=false;ctl?.abort()};
+function greet(){bot("สวัสดีค่ะ น้องวีเองค่ะ บอกได้เลยว่าอยากดูแลเรื่องไหน เช่น ผิวขาว นอนไม่หลับ หรือปวดข้อ\nเลือกอายุ เพศ และงบด้านบนไว้ด้วย จะได้แนะนำได้ตรงขึ้นค่ะ")}
+function bot(t,cls=""){const d=document.createElement("div");d.className="msg bot "+cls;d.textContent=t;msgs.append(d);msgs.scrollTop=msgs.scrollHeight;return d}
+function me(t){const d=document.createElement("div");d.className="msg me";d.textContent=t;msgs.append(d);msgs.scrollTop=msgs.scrollHeight}
+function recs(ids){
+  if(!ids.length)return;const w=document.createElement("div");w.className="recs";
+  w.innerHTML=ids.map(id=>{const p=byId[id];return `<div class="rec"><div class="thumb" style="${shotBg(p)}">${art(p)}</div><div style="min-width:0"><b>${esc(p.name)}</b><span class="num">${baht(p.price)} · ★ ${avg(p).toFixed(1)}</span></div>
+    <div class="acts"><button data-v="${id}">ดู</button><button data-c="${id}">+ ตะกร้า</button></div></div>`}).join("");
+  w.onclick=e=>{const v=e.target.closest("[data-v]"),c=e.target.closest("[data-c]");if(v){go("detail",v.dataset.v);if(innerWidth<700){chat.hidden=true;$("#fab").hidden=false}}if(c)addToCart(c.dataset.c)};
+  msgs.append(w);msgs.scrollTop=msgs.scrollHeight;
+}
+function filters(){return{age:$("#fAge").value?+$("#fAge").value:null,ageLabel:$("#fAge").selectedOptions[0].text,gender:$("#fGender").value,budget:$("#fBudget").value?+$("#fBudget").value:null}}
+function eligible(f){return P.filter(p=>(!f.age||(f.age>=p.age[0]&&f.age<=p.age[1]))&&(!f.gender||p.g==="all"||p.g===f.gender)&&(!f.budget||p.price<=f.budget))}
+
+/* keyword fallback, used when AI is unavailable */
+const SYN={"ผิวขาว":["ขาว","กระจ่าง","ใส","ด่างดำ","ฝ้า","white","gluta","กลูต้า"],"สิว":["สิว","หน้ามัน","acne"],"ริ้วรอย":["ริ้วรอย","เหี่ยว","คอลลาเจน","collagen","แก่"],"นอนหลับ":["นอน","หลับ","เครียด","sleep","ตะคริว"],"ข้อ":["ข้อ","เข่า","ปวด","joint"],"กระดูก":["กระดูก","แคลเซียม","calcium"],"ภูมิคุ้มกัน":["ภูมิ","หวัด","ป่วย","immune"],"เด็ก":["เด็ก","ลูก","kid"],"สายตา":["ตา","จอ","สายตา","eye"],"ลดน้ำหนัก":["ลดน้ำหนัก","อ้วน","ผอม","หุ่น","เผาผลาญ","น้ำหนัก","diet"],"ขับถ่าย":["ขับถ่าย","ท้องผูก","ลำไส้","ท้องอืด","ไฟเบอร์"],"ผม":["ผม","ร่วง","เล็บ","hair"],"โปรตีน":["โปรตีน","กล้าม","เวย์","whey","ฟิตเนส"],"ความจำ":["จำ","สมอง","โฟกัส","สมาธิ","ขี้ลืม"],"พลังงาน":["เพลีย","เหนื่อย","พลังงาน","ไม่มีแรง"],"วัยทอง":["วัยทอง","ร้อนวูบวาบ"]};
+function localRecommend(text,f){
+  const t=text.toLowerCase();const want=Object.entries(SYN).filter(([,ws])=>ws.some(w=>t.includes(w))).map(([k])=>k);
+  const pool=eligible(f);
+  const scored=pool.map(p=>{const hay=(p.tags.join(" ")+" "+p.name+" "+p.desc).toLowerCase();return{p,s:want.reduce((s,k)=>s+(hay.includes(k.toLowerCase())?3:0)+(SYN[k].some(w=>hay.includes(w))?1:0),0)+avg(p)/10}}).filter(o=>o.s>1).sort((a,b)=>b.s-a.s).slice(0,3).map(o=>o.p);
+  let reply;
+  if(!want.length) reply="ขอรายละเอียดเพิ่มนิดนึงค่ะ อยากดูแลเรื่องไหนเป็นพิเศษ เช่น ผิวขาว สิว นอนหลับ ข้อเข่า สายตา หรือลดน้ำหนัก";
+  else if(!scored.length) reply=`ยังไม่มีสินค้าเรื่อง${want.join(", ")}ที่ตรงกับตัวกรองตอนนี้ค่ะ ลองเปลี่ยนงบหรือช่วงอายุดูนะคะ`;
+  else reply=`สำหรับเรื่อง${want.join(" / ")}${f.age?` ช่วงอายุ ${f.ageLabel}`:""}${f.budget?` งบไม่เกิน ${baht(f.budget)}`:""} แนะนำตามนี้ค่ะ\n`+scored.map((p,i)=>`${i+1}. ${p.name} — ${p.desc.split(" ")[0]} ${p.desc.split(" ").slice(1,4).join(" ")}`).join("\n");
+  return{reply,ids:scored.map(p=>p.id)};
+}
+
+async function aiRecommend(text,f){
+  const pool=eligible(f);
+  const catalog=pool.map(p=>`${p.id}|${p.name}|${CATS[p.cat]}|฿${p.price}|อายุ${p.age[0]}-${p.age[1]}|${p.g}|${p.tags.join(",")}|${p.desc}`).join("\n");
+  const rules=`คุณคือ "น้องวี" พนักงานแนะนำอาหารเสริมของร้าน Vitara ตอบเป็นภาษาไทย สุภาพ เป็นกันเอง ลงท้ายด้วย "ค่ะ" กระชับไม่เกิน 4 ประโยค
+แนะนำได้เฉพาะสินค้าในรายการด้านล่างเท่านั้น (ผ่านตัวกรองของลูกค้าแล้ว) เลือก 1–3 รายการที่ตรงที่สุด และบอกเหตุผลสั้นๆ ว่าทำไมเหมาะ
+ถ้าคำถามกว้างไป ให้ถามกลับ 1 คำถาม และ ids เป็น [] ได้
+ห้ามวินิจฉัยโรคหรืออ้างว่ารักษาโรค ถ้าลูกค้าตั้งครรภ์ ให้นมบุตร มีโรคประจำตัว หรือกินยาอยู่ ให้แนะนำปรึกษาแพทย์/เภสัชกรก่อน
+ข้อมูลลูกค้า: อายุ ${f.age?f.ageLabel:"ไม่ระบุ"}, เพศ ${f.gender==="female"?"หญิง":f.gender==="male"?"ชาย":"ไม่ระบุ"}, งบ ${f.budget?"ไม่เกิน ฿"+f.budget:"ไม่จำกัด"}
+รายการสินค้า (id|ชื่อ|หมวด|ราคา|อายุที่เหมาะ|เพศ|แท็ก|รายละเอียด):
+${catalog||"(ไม่มีสินค้าที่ผ่านตัวกรอง ให้แนะนำลูกค้าปรับตัวกรอง)"}
+ตอบเป็น JSON อย่างเดียว: {"reply":"ข้อความถึงลูกค้า","ids":["p1"]}`;
+  const input=[{role:"user",content:rules},...turns.slice(-8)];
+  ctl=new AbortController();
+  const out=await sample.json(input,{modelTier:"quick",cache:false,signal:ctl.signal});
+  const ids=(Array.isArray(out?.ids)?out.ids:[]).map(String).filter(id=>pool.some(p=>p.id===id)).slice(0,3);
+  return{reply:String(out?.reply||"").trim()||"ลองบอกรายละเอียดเพิ่มอีกนิดนะคะ",ids};
+}
+
+async function send(text){
+  text=String(text||"").trim();if(!text||busy)return;
+  if(chat.hidden){chat.hidden=false;$("#fab").hidden=true;if(!msgs.children.length)greet()}
+  me(text);$("#chatInput").value="";busy=true;
+  const f=filters();turns.push({role:"user",content:text});
+  const th=bot("กำลังเลือกสินค้าให้…","think");
+  let res;
+  if(sample){
+    try{res=await aiRecommend(text,f)}
+    catch(e){
+      if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(e?.code)){sample=null;setMode()}
+      if(e?.code==="cancelled"){th.remove();busy=false;turns.pop();return}
+      res=localRecommend(text,f);
+      if(e?.code==="rate_limited")res.reply="(AI ใช้งานถี่เกินไป ใช้ระบบแนะนำพื้นฐานแทน)\n"+res.reply;
+    }
+  } else res=localRecommend(text,f);
+  th.remove();bot(res.reply);recs(res.ids);
+  turns.push({role:"assistant",content:res.reply+(res.ids.length?" [แนะนำ: "+res.ids.join(",")+"]":"")});
+  busy=false;
+}
+$("#chatForm").onsubmit=e=>{e.preventDefault();send($("#chatInput").value)};
+function setMode(){$("#modeNote").textContent=sample?"ตอบโดย Claude AI · ใช้โควตา Claude ของคุณ":"โหมดแนะนำพื้นฐาน (จับคำสำคัญ)"}
+
+(async()=>{setMode();try{sample=await window.claude?.use?.("sample")||null}catch{sample=null}setMode()})();
+
+saveCart();render();
+</script>
+
+</body>
+</html>
